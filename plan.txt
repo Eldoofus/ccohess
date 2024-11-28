@@ -1,0 +1,41 @@
+Piece representation:
+
+P: 0
+N : 1
+B: 2
+R: 3
+Q: 4
+K : 5
+Empty: 6
+
+define 
+
+
+
+
+Board
+Class for each piece 
+
+Move Generation
+
+N 0
+NE 1
+E 2
+SE 3
+S 4
+SW 5
+W 6
+NW 7
+Null_Move -1
+
+int queen_moves[64][9]
+
+
+     * * * * * * * *
+     * * * * * * * *
+     * Q * * * * * *
+     * * * * * * * *
+     * * * * * * * *
+
+rnbqkbnr/pppppppp/8/8/8/8/pppppppp//rnbqkbnr
+rnbqkbnr/pppppppp/8/8/4p3/8/pppp1ppp/rnbqkbnr (side to play) (castling rights) (target en-passant square)

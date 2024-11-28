@@ -1,0 +1,21 @@
+{
+    "files.associations": {
+        "*.sage": "python",
+        "regex": "cpp",
+        "xlocale": "cpp",
+        "xstring": "cpp",
+        "string_view": "cpp",
+        "istream": "cpp",
+        "string": "cpp",
+        "*.tcc": "cpp",
+        "random": "cpp",
+        "iostream": "cpp",
+        "format": "cpp",
+        "chrono": "cpp",
+        "stacktrace": "cpp",
+        "thread": "cpp",
+        "filesystem": "cpp",
+        "bitset": "cpp",
+        "numbers": "cpp"
+    }
+}
