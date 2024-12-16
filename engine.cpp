@@ -1,238 +1,321 @@
-#include<bits/stdc++.h>
-#include<x86intrin.h>
-#include"map.cpp"
-using namespace std;
+#include"senjo/ChessEngine.h"
+#include"senjo/UCIAdapter.h"
+#include"senjo/Output.h"
+#include"mover.cpp"
 
-typedef unsigned long long ull;
+#include"polyglot.cpp"
 
-void printbb(ull p){
-    cout << "+---+---+---+---+---+---+---+---+\n";
-    for(int r=7;r>-1;r--){
-        for(int f=0;f<8;f++){
-            cout << "| " << ((p & (1ull << (r * 8 + f))) ? "X" : " ") << " ";
-        } cout << "|\n";
-        cout << "+---+---+---+---+---+---+---+---+\n";
-    }
-}
+constexpr bool engineDebug = true;
 
-class board {
+class ccohess : public senjo::ChessEngine {
   public:
-    ull bbs[14]; // a1 to f8
-    bool side; // 0: White, 1: Black
-    char castle; // KQkq
-    ull enpassant; // rank, file
-    int halfmove, fullmove;
+    bool initialized = false, inbook = true;
+    board* b = new board(board::startpos()); // disgusting workaround
+    status* stat;
+    ull EP;
+    inline static vector<string> moves;
+    inline static vector<long long> evals;
 
-    enum piecetype {
-        nPawn,
-        nKnight,
-        nBishop,
-        nRook,
-        nQueen,
-        nKing,
-        nEmpty
-    };
-
-    inline ull& wPawns(){ return bbs[nPawn * 2]; }
-    inline ull& wKnights(){ return bbs[nKnight * 2]; }
-    inline ull& wBishops(){ return bbs[nBishop * 2]; }
-    inline ull& wRooks(){ return bbs[nRook * 2]; }
-    inline ull& wQueens(){ return bbs[nQueen * 2]; }
-    inline ull& wKings(){ return bbs[nKing * 2]; }
-    inline ull& bPawns(){ return bbs[nPawn * 2 + 1]; }
-    inline ull& bKnights(){ return bbs[nKnight * 2 + 1]; }
-    inline ull& bBishops(){ return bbs[nBishop * 2 + 1]; }
-    inline ull& bRooks(){ return bbs[nRook * 2 + 1]; }
-    inline ull& bQueens(){ return bbs[nQueen * 2 + 1]; }
-    inline ull& bKings(){ return bbs[nKing * 2 + 1]; }
-    inline ull& wPieces(){ return bbs[12]; }
-    inline ull& bPieces(){ return bbs[13]; }
-
-    int getPiece(int rank, int file){
-        ull i = (1ull << (rank * 8 + file));
-        if(wPieces() & i){
-            if(wPawns() & i) return 0;
-            if(wKnights() & i) return 2;
-            if(wBishops() & i) return 4;
-            if(wRooks() & i) return 6;
-            if(wQueens() & i) return 8;
-            if(wKings() & i) return 10;
-        } else if(bPieces() & i){
-            if(bPawns() & i) return 1;
-            if(bKnights() & i) return 3;
-            if(bBishops() & i) return 5;
-            if(bRooks() & i) return 7;
-            if(bQueens() & i) return 9;
-            if(bKings() & i) return 11;
-        }
-        return 12;
+    string getEngineName() const {
+        return "ccohess";
+    }
+    
+    string getEngineVersion() const {
+        return "0.0";
     }
 
-    board(string fen){
-        string s;
-        stringstream ss(fen);
-        
-        for (int i=0;i<14;i++) bbs[i] = 0;
+    string getAuthorName() const {
+        return "Eldoofus, ccohho, Betterthanyou!";
+    }
 
-        ss >> s; // position data -> bitboards
-        int r = 7, f = 0, i = 0;
-        for(;i<s.length();i++){
-            //cout << s[i];
-            if(s[i] >= '1' && s[i] <= '8'){
-                f += s[i] - '0';
-            } else if (s[i] == '/') {
-                r--;
-                f = 0;
+    list<senjo::EngineOption> getOptions() const {
+        return list<senjo::EngineOption>();
+    }
+
+    bool setEngineOption(const string& optionName, const string& optionValue){
+        return false;
+    }
+
+    void initialize(){
+        initialized = true;
+        inbook = true;
+    }
+
+    bool isInitialized() const {
+        return initialized;
+    }
+
+    bool setPosition(const string& fen, string* remain = nullptr){
+        b = new board(fen);
+        stat = new status(FenInfo(0, fen), FenInfo(1, fen), FenInfo(4, fen), FenInfo(5, fen), FenInfo(2, fen), FenInfo(3, fen));
+        EP = FenEP(fen);
+        cout << "eval: " << evaluator::_eval(*stat, *b) << endl;
+        mover::halfmove = -1;
+        mover::fullmove = 0;
+        b->print();
+        return true;
+    }
+
+    template<class status status>
+    string rep(const board& brd){
+        mover::reps[mover::fullmove] = Lookup::zobrist<status>(brd, EP);
+        return "";
+    }
+    BookToTemplate(rep);
+
+    bool makeMove(const string& move){
+        ull from = 1ull << (move[0] - 'a' + (move[1] - '1') * 8);
+        ull to = 1ull << (move[2] - 'a' + (move[3] - '1') * 8);
+
+        boardPiece p = b->getPiece(from);
+        bool t = to & (stat->wMove ? b->blacks : b->whites);
+        board* oldb = b;
+        status* olds = stat;
+        // cout << "board before move: " << move << endl;
+        // b->print();
+        // cout << "white to move: " << stat->wMove << endl;
+        // cout << "board after move: " << move << endl;
+        _rep(*stat, *b);
+        if(p == boardPiece::pawn){
+            mover::halfmove = mover::fullmove;
+            if(move.length() == 5){
+                if(stat->wMove){
+                    if(move[4] == 'n') b = new board(board::movePromote<boardPiece::knight, true>(*b, from, to));
+                    if(move[4] == 'b') b = new board(board::movePromote<boardPiece::bishop, true>(*b, from, to));
+                    if(move[4] == 'r') b = new board(board::movePromote<boardPiece::rook, true>(*b, from, to));
+                    if(move[4] == 'q') b = new board(board::movePromote<boardPiece::queen, true>(*b, from, to));
+                } else {
+                    if(move[4] == 'n') b = new board(board::movePromote<boardPiece::knight, false>(*b, from, to));
+                    if(move[4] == 'b') b = new board(board::movePromote<boardPiece::bishop, false>(*b, from, to));
+                    if(move[4] == 'r') b = new board(board::movePromote<boardPiece::rook, false>(*b, from, to));
+                    if(move[4] == 'q') b = new board(board::movePromote<boardPiece::queen, false>(*b, from, to));
+                }
+                stat = new status(stat->silentMove());
+            } else if((to >> 16) == from || (to << 16) == from){
+                if(stat->wMove) b = new board(board::move<boardPiece::pawn, true, false>(*b, from, to));
+                else b = new board(board::move<boardPiece::pawn, false, false>(*b, from, to));
+                EP = to;
+                stat = new status(stat->pawnPush());
+            } else if(stat->hasEP){
+                if(stat->wMove){
+                    if(to == (EP << 8)) b = new board(board::moveEP<true>(*b, from, to));
+                    else b = new board(board::move<boardPiece::pawn, true>(*b, from, to, t));
+                } else {
+                    if(to == (EP >> 8)) b = new board(board::moveEP<false>(*b, from, to));
+                    else b = new board(board::move<boardPiece::pawn, false>(*b, from, to, t));
+                }
+                stat = new status(stat->silentMove());
             } else {
-                bbs[fen_helper(s[i])] |= 1ull << (r * 8 + f);
-                if(s[i] >= 'a') bbs[13] |= 1ull << (r * 8 + f);
-                else bbs[12] |= 1ull << (r * 8 + f);
-                f++;
+                if(stat->wMove) b = new board(board::move<boardPiece::pawn, true>(*b, from, to, t));
+                else b = new board(board::move<boardPiece::pawn, false>(*b, from, to, t));
+                stat = new status(stat->silentMove());
+            }
+        } else if(p == boardPiece::knight){
+            if(t) mover::halfmove = mover::fullmove;
+            if(stat->wMove) b = new board(board::move<boardPiece::knight, true>(*b, from, to, t));
+            else b = new board(board::move<boardPiece::knight, false>(*b, from, to, t));
+            stat = new status(stat->silentMove());
+        } else if(p == boardPiece::bishop){
+            if(t) mover::halfmove = mover::fullmove;
+            if(stat->wMove) b = new board(board::move<boardPiece::bishop, true>(*b, from, to, t));
+            else b = new board(board::move<boardPiece::bishop, false>(*b, from, to, t));
+            stat = new status(stat->silentMove());
+        } else if(p == boardPiece::rook){
+            if(t) mover::halfmove = mover::fullmove;
+            if(stat->wMove) b = new board(board::move<boardPiece::rook, true>(*b, from, to, t));
+            else b = new board(board::move<boardPiece::rook, false>(*b, from, to, t));
+            if(stat->canCastle()){
+                if(stat->isLeftRook(from)) stat = new status(stat->rookMoveL());
+                else if(stat->isRightRook(from)) stat = new status(stat->rookMoveR());
+                else stat = new status(stat->silentMove());
+            } else stat = new status(stat->silentMove());
+        } else if(p == boardPiece::queen){
+            if(t) mover::halfmove = mover::fullmove;
+            if(stat->wMove) b = new board(board::move<boardPiece::queen, true>(*b, from, to, t));
+            else b = new board(board::move<boardPiece::queen, false>(*b, from, to, t));
+            stat = new status(stat->silentMove());
+        } else if(p == boardPiece::king){
+            if(t) mover::halfmove = mover::fullmove;
+            if((to << 2) == from){
+                if(stat->wMove) b = new board(board::moveCastle<true>(*b, from | to, stat->rookswitchL()));
+                else b = new board(board::moveCastle<false>(*b, from | to, stat->rookswitchL()));
+            } else if((to >> 2) == from){
+                if(stat->wMove) b = new board(board::moveCastle<true>(*b, from | to, stat->rookswitchR()));
+                else b = new board(board::moveCastle<false>(*b, from | to, stat->rookswitchR()));
+            } else {
+                if(stat->wMove) b = new board(board::move<boardPiece::king, true>(*b, from, to, t));
+                else b = new board(board::move<boardPiece::king, false>(*b, from, to, t));
+            }
+            stat = new status(stat->kingMove());
+        }
+
+        // b->print();
+        // cout << "white to move: " << stat->wMove << endl;
+        // cout << "has EP: " << stat->hasEP << endl;
+        // cout << "EP: " << EP << endl;
+        mover::fullmove++;
+        cout << evaluator::_eval(*stat, *b) << endl;
+        delete oldb;
+        delete olds;
+        return true;
+    }
+
+    string getFEN() const { return ""; }
+    void printBoard() const { return; }
+    bool whiteToMove() const { return true; }
+    void clearSearchData(){ return; }
+    void ponderHit(){ return; }
+    void setDebug(const bool flag){ return; }
+    bool isDebugOn() const { return false; }
+    bool isSearching(){ return false; }
+    void stopSearching(){ return; }
+    bool stopRequested() const { return false; }
+    void waitForSearchFinish(){}
+    uint64_t perft(const int depth){ return 0ull; }
+
+    template<class status status>
+    void search(board& brd, int depth){
+        // cout << "has EP: " << stat->hasEP << endl;
+        // cout << "EP: " << EP << endl;
+        mList::init<status>(brd, depth + 25);
+        mList::initEP(EP);
+        mover::Init(depth + 25);
+        mList::EnumerateMoves<status, mover>::e(brd, depth + 25);
+        //cout << "zobrist: " << format("{:#x}", Lookup::zobrist<status>(brd, EP)) << endl;
+    }
+    StatusToTemplate(search);
+
+    template<class status status>
+    string book(const board& brd){
+        return polyglot::get(Lookup::zobrist<status>(brd, EP));
+    }
+    BookToTemplate(book);
+    
+    auto iterDeepen(ull time, int& depth){
+        using namespace chrono;
+        ull e;
+        high_resolution_clock::time_point start = high_resolution_clock::now(), end;
+        for(;depth<30;depth++){
+            moves.clear();
+            evals.clear();
+            _search(*stat, *b, depth);
+            end = high_resolution_clock::now();
+            e = duration_cast<milliseconds>(end - start).count();
+            cout << "Reached depth " << depth << endl;
+            if (depth > 4 && e >= time / 20) return e;
+        }
+        return e;
+    }
+
+    string go(const senjo::GoParams& params, string* ponder = nullptr){
+        if(inbook){
+            string s = _book(*stat, *b);
+            if(s == "") {
+                inbook = false;
+                cout << "Out of book, switching to analysis\n";
+            } else {
+                cout << "Book move: " << s << endl;
+                return s;
             }
         }
-        //cout << endl;
-
-        ss >> s; // side to play
-        side = s[0] == 'b';
-
-        ss >> s; // castling rights
-        castle = 0;
-        for(i=0;i<s.length();i++){
-            if(s[i] == 'K') castle |= 0b1000;
-            if(s[i] == 'Q') castle |= 0b100;
-            if(s[i] == 'k') castle |= 0b10;
-            if(s[i] == 'q') castle |= 0b1;
+        int depth = 1;
+        auto elapsed = iterDeepen(stat->wMove ? params.wtime : params.btime, depth);
+        cout << "elapsed: " << elapsed << "ms (depth " << depth << ")\n";
+        if(moves.empty()) {
+            b->print();
+            cout << "No Moves!\n";
+            return "";
         }
-
-        ss >> s; // en passant
-        enpassant = 1ull << ((s[1] - '0') * 8 + (s[0] - 'a'));
-
-        ss >> halfmove >> fullmove;
-    }
-
-    void print(){
-        constexpr char p[13] = {'P', 'p', 'N', 'n', 'B', 'b', 'R', 'r', 'Q', 'q', 'K', 'k', ' '};
-        cout << "+---+---+---+---+---+---+---+---+\n";
-        for(int r=7;r>-1;r--){
-            for(int f=0;f<8;f++){
-                cout << "| " << p[getPiece(r, f)] << " ";
-            } cout << "|\n";
-            cout << "+---+---+---+---+---+---+---+---+\n";
+        cout << "moves:";
+        for (string s : moves) cout << " " << s;
+        cout << "\nevals:";
+        for (long long d : evals) cout << " " << d;
+        cout << endl;
+        long long be = -21474836470ll;
+        int bi = 0;
+        for(int i=0;i<moves.size();i++) if(evals[i] > be){
+            be = evals[i];
+            bi = i;
         }
+        cout << "best eval: " << be << endl;
+        cout << "total nodes: " << mover::nodes << endl;
+        cout << "beta cutoffs: " << mover::cuts << " (" << (double)mover::cuts / mover::nodes * 100 << "%)\n";
+        cout << "TT skips: " << mover::skips << " (" << (double)mover::skips / mover::nodes * 100 << "%)\n";
+        return moves.at(bi);
     }
 
-  private:
-    int fen_helper(char p){
-        if(p == 'P') return 0;
-        if(p == 'N') return 2;
-        if(p == 'B') return 4;
-        if(p == 'R') return 6;
-        if(p == 'Q') return 8;
-        if(p == 'K') return 10;
-        if(p == 'p') return 1;
-        if(p == 'n') return 3;
-        if(p == 'b') return 5;
-        if(p == 'r') return 7;
-        if(p == 'q') return 9;
-        if(p == 'k') return 11;
-        return -1;
+    senjo::SearchStats getSearchStats() const {
+        return senjo::SearchStats();
     }
 };
 
-class LookupTables{
-  public:
-    static ull clear_rank(int rank){ return ~mask_rank(rank); }
-    //0x80 => 0b10000000
-    static ull clear_file(int file) { return ~mask_file(file); }
-    
-    static ull mask_rank(int rank){
-      return 0xFFull << ((rank-1) * 8);
-    }
-    
-    static ull mask_file(int file){
-      return 0x0101010101010101ull << (file-1);
-    }
-};
-
-struct move {
-    ull from, to;
-    board::piecetype type;
-};
-
-class MoveGeneration{
-  public:
-    static ull king(ull loc, ull my_pieces){
-        ull clear_file_1 = loc & LookupTables::clear_file(1);
-        ull clear_file_8 = loc & LookupTables::clear_file(8);
-        ull NW = clear_file_1 << 7;
-        ull N = loc << 8;
-        ull NE = clear_file_8 << 9;
-        ull E = clear_file_8 << 1;
-        ull SE = clear_file_8 >> 7;
-        ull S = loc >> 8;
-        ull SW = clear_file_1 >> 9;
-        ull W = clear_file_1 >> 1;
-        return (NW | N | NE | E | SE | S | SW | W) & ~my_pieces;
-    }
-
-    static ull knight(ull loc, ull my_pieces){
-        ull clear_file_1 = loc & LookupTables::clear_file(1);
-        ull clear_file_2 = loc & LookupTables::clear_file(2);
-        ull clear_file_7 = loc & LookupTables::clear_file(7);
-        ull clear_file_8 = loc & LookupTables::clear_file(8);
-        ull NWW = (clear_file_1 & clear_file_2) << 6;
-        ull NNW = (clear_file_1) << 15;
-        ull NNE = (clear_file_8) << 17;
-        ull NEE = (clear_file_7 & clear_file_8) << 10;
-        ull SEE = (clear_file_7 & clear_file_8) >> 6;
-        ull SSE = (clear_file_8) >> 15;
-        ull SSW = (clear_file_1) >> 17;
-        ull SWW = (clear_file_1 & clear_file_2) >> 10;
-        return (NWW | NNW | NNE | NEE | SEE | SSE | SSW | SWW) & ~my_pieces;
-    }
-
-    static ull white_pawn(ull loc, ull my_pieces, ull opp_pieces, ull en_passant){
-        ull all_pieces = my_pieces | opp_pieces;
-        ull default_step = (loc << 8) & ~all_pieces;
-        ull two_steps = ((default_step & LookupTables::mask_rank(3)) << 8) & ~all_pieces;
-        ull NW = ((loc & LookupTables::clear_file(1)) << 7) & (opp_pieces | en_passant);
-        ull NE = ((loc & LookupTables::clear_file(8)) << 9) & (opp_pieces | en_passant);
-        return (default_step | two_steps | NW | NE);
-    }
-
-    static ull black_pawn(ull loc, ull my_pieces, ull opp_pieces, ull en_passant){
-        ull all_pieces = my_pieces | opp_pieces;
-        ull default_step = (loc >> 8) & ~all_pieces;
-        ull two_steps = ((default_step & LookupTables::mask_rank(6)) >> 8) & ~all_pieces;
-        ull SW = ((loc & LookupTables::clear_file(1)) >> 9) & (opp_pieces | en_passant);
-        ull SE = ((loc & LookupTables::clear_file(8)) >> 7) & (opp_pieces | en_passant);
-        return (default_step | two_steps | SW | SE);
-    }
-
-    static ull rook(ull loc, ull my_pieces, ull opp_pieces){
-        return rMap[_tzcnt_u64(loc) * 4096 + _pext_u64(my_pieces | opp_pieces, rMask[_tzcnt_u64(loc)])] & ~my_pieces;
-    }
-
-    static ull bishop(ull loc, ull my_pieces, ull opp_pieces){
-        return bMap[_tzcnt_u64(loc) * 512 + _pext_u64(my_pieces | opp_pieces, bMask[_tzcnt_u64(loc)])] & ~my_pieces;
-    }
-
-    static ull queen(ull loc, ull my_pieces, ull opp_pieces){
-        return rook(loc, my_pieces, opp_pieces) | bishop(loc, my_pieces, opp_pieces);
-    }
-};//morning morning morning morning morning eldoofus eldoofus eldoofus mornng 
-
-int main(){
-    // board b("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
-    // // for (int i=0;i<14;i++){
-    // //     cout << bitset<64>(b.bbs[i]) << endl;
-    // // }
-    // b.print();
-    printbb(MoveGeneration::black_pawn((1ull << (4 + 6 * 8)), 0ull, 0ull, 0ull));
-    printbb(MoveGeneration::black_pawn((1ull << (2 + 6 * 8)), 0ull, 0ull, 0ull));
-    printbb(MoveGeneration::bishop((1ull << (4 + 4 * 8)), 0ull, 0ull));
-    printbb(MoveGeneration::queen((1ull << (4 + 4 * 8)), 0ull, 0ull));
-    // printbb(LookupTables::clear_file(1));
-    // printbb(LookupTables::clear_file(8));
-    // printbb(LookupTables::clear_rank(1));
+void addMove(ull from, ull to, char promo){
+    //cout << from << ' ' << to << endl;
+    int f = square(from), t = square(to);
+    string s = "";
+    s += 'a' + f % 8;
+    s += '1' + f / 8;
+    s += 'a' + t % 8;
+    s += '1' + t / 8;
+    s += promo;
+    ccohess::moves.push_back(s);
 }
+
+void addEval(long long e){
+    //cout << str << ": " << e << endl;
+    ccohess::evals.push_back(e);
+}
+
+int main() {
+    try {
+        srand(time(0));
+        cout << "Beep Boop\n";
+        ccohess engine;
+        senjo::UCIAdapter adapter(engine);
+
+        string line;
+        line.reserve(16384);
+
+        ofstream o;
+        o.open("log.txt", ios_base::app);
+        o << "Beep Boop\n";
+
+        while (getline(cin, line)) {
+            //cout << line << ", length: " << line.length();
+            o << line << endl;
+            if (line == "isready"){
+                if (!adapter.doCommand(line)) break;
+                getline(cin, line);
+                if(line.length() == 28) if (!adapter.doCommand("position startpos")) break;
+            }
+            if (!adapter.doCommand(line)) break;
+        }
+        o.close();
+        return 0;
+    } catch (const exception& e) {
+        senjo::Output() << "ERROR: " << e.what();
+        return 1;
+    }
+}
+
+// int main(){
+    // string s; int n;
+    // cout << "b: ";
+    // getline(cin, s);
+    // cout << "n: ";
+    // cin >> n;
+    // _PerfT(s, n);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 2);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 3);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 4);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 5);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 6);
+    // cout << mover::nodes << endl;
+    // PerfT<s>("", b, 7);
+    // cout << mover::nodes << endl;
+// }

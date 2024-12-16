@@ -96,26 +96,53 @@ void bishopGen(){
     }
 }
 
+ull flipbytes(ull v){
+    // swap odd and even bits
+    v = ((v >> 1) & 0x5555555555555555) | ((v & 0x5555555555555555) << 1);
+    // swap consecutive pairs
+    v = ((v >> 2) & 0x3333333333333333) | ((v & 0x3333333333333333) << 2);
+    // swap nibbles ... 
+    v = ((v >> 4) & 0x0F0F0F0F0F0F0F0F) | ((v & 0x0F0F0F0F0F0F0F0F) << 4);
+    return v;
+}
+
+#define S(mg, eg) ((int)((unsigned int)(eg) << 16) + (mg))
+#define MgScore(s) ((int16_t)((uint16_t)((unsigned)((s)))))
+#define EgScore(s) ((int16_t)((uint16_t)((unsigned)((s) + 0x8000) >> 16)))
+
+int PSQT[6][64];
+
+// Initialize the piece square tables with piece values included
+CONSTR(1) InitPSQT() {
+    for (int pt = 0; pt <= 5; ++pt)
+        for (int sq = 0; sq <= 63; ++sq) {
+            int value = PieceTypeValue[pt] + PieceSqValue[pt-1][sq];
+            PSQT[MakePiece(WHITE, pt)][MirrorSquare(sq)] =  value;
+            PSQT[MakePiece(BLACK, pt)][             sq ] = -value;
+        }
+}
+
 int main(){
-    rookMasks();
-    rookGen();
-    bishopMasks();
-    bishopGen();
-    ofstream o;
-    o.open("map_output.cpp");
-    o << "#include<bits/stdc++.h>\nusing namespace std;\n\ntypedef unsigned long long ull;\n\nconstexpr ull rMap[64*4096] = {\n    " << format("{:#x}", rlookups[0]);
-    for (int i=1;i<64*4096;i++){
-        o << format(",{:#x}", rlookups[i]);
-    } o << "\n};\nconstexpr ull rMask[64] = {\n    " << format("{:#x}", rmasks[0]);
-    for (int i=1;i<64;i++){
-        o << format(",{:#x}", rmasks[i]);
-    } o << "\n};\nconstexpr ull bMask[64] = {\n    " << format("{:#x}", bmasks[0]);
-    for (int i=1;i<64;i++){
-        o << format(",{:#x}", bmasks[i]);
-    } o << "\n};\nconstexpr ull bMap[64*512] = {\n    " << format("{:#x}", blookups[0]);
-    for (int i=1;i<64*512;i++){
-        o << format(",{:#x}", blookups[i]);
-    } o << "\n};\n";
+    cout << format("{:#x}", flipbytes(0x8001024004082010ull));
+    // rookMasks();
+    // rookGen();
+    // bishopMasks();
+    // bishopGen();
+    // ofstream o;
+    // o.open("map_output.cpp");
+    // o << "#include<bits/stdc++.h>\nusing namespace std;\n\ntypedef unsigned long long ull;\n\nconstexpr ull rMap[64*4096] = {\n    " << format("{:#x}", rlookups[0]);
+    // for (int i=1;i<64*4096;i++){
+    //     o << format(",{:#x}", rlookups[i]);
+    // } o << "\n};\nconstexpr ull rMask[64] = {\n    " << format("{:#x}", rmasks[0]);
+    // for (int i=1;i<64;i++){
+    //     o << format(",{:#x}", rmasks[i]);
+    // } o << "\n};\nconstexpr ull bMask[64] = {\n    " << format("{:#x}", bmasks[0]);
+    // for (int i=1;i<64;i++){
+    //     o << format(",{:#x}", bmasks[i]);
+    // } o << "\n};\nconstexpr ull bMap[64*512] = {\n    " << format("{:#x}", blookups[0]);
+    // for (int i=1;i<64*512;i++){
+    //     o << format(",{:#x}", blookups[i]);
+    // } o << "\n};\n";
     // for(int i=0;i<64;i++){
     //     printbb(bmasks[i]);
     // }

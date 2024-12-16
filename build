@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+time g++ -O2 -std=gnu++23 -march=native engine.cpp -o engine2 -L"senjo/build/" -lsenjo -flto=auto -fuse-ld=mold -fno-inline && ./engine2
+# -ftemplate-backtrace-limit=1000 -ftemplate-depth=20

@@ -1,3 +1,9 @@
+*
+!/**/
+!*.*
+
+!build
+
 # Prerequisites
 *.d
 
@@ -30,3 +36,14 @@
 *.exe
 *.out
 *.app
+
+senjo/build/*
+
+plan.md
+a.txt
+*.data
+*.old
+map_output.cpp
+generator.cpp
+log.txt
+.vscode/*
