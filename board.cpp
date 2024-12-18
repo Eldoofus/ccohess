@@ -592,6 +592,7 @@ if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000)>(
 return func<status::startpos()>(brd, depth);}
 
 #define EvalToTemplate(func) \
+template <bool e=false> \
 static inline long long _##func(status s, const board& brd) { \
 const bool WH = s.wMove;\
 const bool EP = s.hasEP;\
@@ -599,71 +600,71 @@ const bool BL = s.bCastleL;\
 const bool BR = s.bCastleR;\
 const bool WL = s.wCastleL;\
 const bool WR = s.wCastleR;\
-if ( WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b111111)>(brd); \
-if ( WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b111110)>(brd); \
-if ( WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b111101)>(brd); \
-if ( WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b111100)>(brd); \
-if ( WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b111011)>(brd); \
-if ( WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b111010)>(brd); \
-if ( WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b111001)>(brd); \
-if ( WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b111000)>(brd); \
-if ( WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b110111)>(brd); \
-if ( WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b110110)>(brd); \
-if ( WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b110101)>(brd); \
-if ( WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b110100)>(brd); \
-if ( WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b110011)>(brd); \
-if ( WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b110010)>(brd); \
-if ( WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b110001)>(brd); \
-if ( WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b110000)>(brd); \
-if ( WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b101111)>(brd); \
-if ( WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b101110)>(brd); \
-if ( WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b101101)>(brd); \
-if ( WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b101100)>(brd); \
-if ( WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b101011)>(brd); \
-if ( WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b101010)>(brd); \
-if ( WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b101001)>(brd); \
-if ( WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b101000)>(brd); \
-if ( WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b100111)>(brd); \
-if ( WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b100110)>(brd); \
-if ( WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b100101)>(brd); \
-if ( WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b100100)>(brd); \
-if ( WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b100011)>(brd); \
-if ( WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b100010)>(brd); \
-if ( WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b100001)>(brd); \
-if ( WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b100000)>(brd); \
-if (!WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b011111)>(brd); \
-if (!WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b011110)>(brd); \
-if (!WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b011101)>(brd); \
-if (!WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b011100)>(brd); \
-if (!WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b011011)>(brd); \
-if (!WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b011010)>(brd); \
-if (!WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b011001)>(brd); \
-if (!WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b011000)>(brd); \
-if (!WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b010111)>(brd); \
-if (!WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b010110)>(brd); \
-if (!WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b010101)>(brd); \
-if (!WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b010100)>(brd); \
-if (!WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b010011)>(brd); \
-if (!WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b010010)>(brd); \
-if (!WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b010001)>(brd); \
-if (!WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b010000)>(brd); \
-if (!WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b001111)>(brd); \
-if (!WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b001110)>(brd); \
-if (!WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b001101)>(brd); \
-if (!WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b001100)>(brd); \
-if (!WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b001011)>(brd); \
-if (!WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b001010)>(brd); \
-if (!WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b001001)>(brd); \
-if (!WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b001000)>(brd); \
-if (!WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b000111)>(brd); \
-if (!WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b000110)>(brd); \
-if (!WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b000101)>(brd); \
-if (!WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b000100)>(brd); \
-if (!WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b000011)>(brd); \
-if (!WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b000010)>(brd); \
-if (!WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b000001)>(brd); \
-if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000)>(brd); \
-return func<status::startpos()>(brd);}
+if ( WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b111111), e>(brd); \
+if ( WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b111110), e>(brd); \
+if ( WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b111101), e>(brd); \
+if ( WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b111100), e>(brd); \
+if ( WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b111011), e>(brd); \
+if ( WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b111010), e>(brd); \
+if ( WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b111001), e>(brd); \
+if ( WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b111000), e>(brd); \
+if ( WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b110111), e>(brd); \
+if ( WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b110110), e>(brd); \
+if ( WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b110101), e>(brd); \
+if ( WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b110100), e>(brd); \
+if ( WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b110011), e>(brd); \
+if ( WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b110010), e>(brd); \
+if ( WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b110001), e>(brd); \
+if ( WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b110000), e>(brd); \
+if ( WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b101111), e>(brd); \
+if ( WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b101110), e>(brd); \
+if ( WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b101101), e>(brd); \
+if ( WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b101100), e>(brd); \
+if ( WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b101011), e>(brd); \
+if ( WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b101010), e>(brd); \
+if ( WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b101001), e>(brd); \
+if ( WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b101000), e>(brd); \
+if ( WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b100111), e>(brd); \
+if ( WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b100110), e>(brd); \
+if ( WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b100101), e>(brd); \
+if ( WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b100100), e>(brd); \
+if ( WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b100011), e>(brd); \
+if ( WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b100010), e>(brd); \
+if ( WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b100001), e>(brd); \
+if ( WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b100000), e>(brd); \
+if (!WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b011111), e>(brd); \
+if (!WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b011110), e>(brd); \
+if (!WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b011101), e>(brd); \
+if (!WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b011100), e>(brd); \
+if (!WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b011011), e>(brd); \
+if (!WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b011010), e>(brd); \
+if (!WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b011001), e>(brd); \
+if (!WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b011000), e>(brd); \
+if (!WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b010111), e>(brd); \
+if (!WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b010110), e>(brd); \
+if (!WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b010101), e>(brd); \
+if (!WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b010100), e>(brd); \
+if (!WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b010011), e>(brd); \
+if (!WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b010010), e>(brd); \
+if (!WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b010001), e>(brd); \
+if (!WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b010000), e>(brd); \
+if (!WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b001111), e>(brd); \
+if (!WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b001110), e>(brd); \
+if (!WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b001101), e>(brd); \
+if (!WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b001100), e>(brd); \
+if (!WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b001011), e>(brd); \
+if (!WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b001010), e>(brd); \
+if (!WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b001001), e>(brd); \
+if (!WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b001000), e>(brd); \
+if (!WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b000111), e>(brd); \
+if (!WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b000110), e>(brd); \
+if (!WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b000101), e>(brd); \
+if (!WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b000100), e>(brd); \
+if (!WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b000011), e>(brd); \
+if (!WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b000010), e>(brd); \
+if (!WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b000001), e>(brd); \
+if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000), e>(brd); \
+return func<status::startpos(), e>(brd);}
 
 #define BookToTemplate(func) \
 inline string _##func(status s, const board& brd) { \

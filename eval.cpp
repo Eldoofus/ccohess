@@ -295,12 +295,11 @@ class evaluator {
     template<bool white, bool toPlay>
     static inline int EvalPassedPawns(const board& b) {
         int eval = 0, count;
-
         ull passers = OwnColor<white>(b) & EvalInfo.passedPawns;
 
         forBits (passers) {
             ull sq = square(passers);
-            ull forward = Pawn_Forward<white>(sq);
+            ull forward = square(Pawn_Forward<white>(sq));
             int rank = sq / 8;
             if constexpr (!white) rank = 7 - rank;
             int r = rank - 3;
@@ -312,20 +311,16 @@ class evaluator {
             // Square rule
             if (OwnColor<!white>(b) == (Pawns<!white>(b) | King<!white>(b)) && ::distance[sq*64 + promoSq] < ::distance[square(King<!white>(b))*64 + promoSq] - ((!white) == toPlay))
                 eval += PassedSquare;
-
             // distance to own king
             count = ::distance[forward * 64 + square(King<white>(b))];
             eval += count * PassedDistUs[r];
-
             // distance to enemy king
             count = (rank - 2) * ::distance[forward * 64 + square(King<!white>(b))];
             eval += count * PassedDistThem;
-
             // Blocked from advancing
             if (b.occupied & (1ull << forward)) eval += PassedBlocked[r];
             // Free to advance
             else if (!((1ull << forward) & EvalInfo.attackedBy[!white][6])) eval += PassedFreeAdv[r];
-
             // Rook supporting from behind
             if (Rooks<white>(b) & Ahead<!white>(1ull << sq)) eval += PassedRookBack;
         }
@@ -472,25 +467,30 @@ class evaluator {
         return (value * 256 + 12) / 24;
     }
 
-    template<class status status> // side to play, en passant rights, castling rights
+    template<class status status, bool extra=false> // side to play, en passant rights, castling rights
     static long long eval(const board& b){
         InitEvalInfo<true>(b);
         InitEvalInfo<false>(b);
 
         // Material (includes PSQT) + trend
-        int eval = EvalMaterial(b);
-
+        int material = EvalMaterial(b);
+        int eval = material;
+        
         // Evaluate pawns
-        eval += EvalPawns<true>(b) - EvalPawns<false>(b);
+        int pawns = EvalPawns<true>(b) - EvalPawns<false>(b);
+        eval += pawns;
 
         // Evaluate pieces
-        eval += EvalPieces(b);
+        int pieces = EvalPieces(b);
+        eval += pieces;
 
         // Evaluate passed pawns
-        eval +=  EvalPassedPawns<true, status.wMove>(b) - EvalPassedPawns<false, status.wMove>(b);
+        int ppawns = EvalPassedPawns<true, status.wMove>(b) - EvalPassedPawns<false, status.wMove>(b);
+        eval += ppawns;
 
         // Evaluate threats
-        eval +=  EvalThreats<true>(b) - EvalThreats<false>(b);
+        int threats = EvalThreats<true>(b) - EvalThreats<false>(b);
+        eval += threats;
 
         // Adjust eval by scale factor
         int scale = ScaleFactor(b, eval);
@@ -500,6 +500,16 @@ class evaluator {
 
         // Adjust score by phase
         eval = (MgScore(eval) * phase + EgScore(eval) * (256 - phase) * scale / 128) / 256;
+
+        if constexpr (extra) cout << "Scale: " << scale << endl;
+        if constexpr (extra) cout << "Phase: " << phase << endl;
+        if constexpr (extra) cout << "Material: " << ((MgScore(material) * phase + EgScore(material) * (256 - phase) * scale / 128) / 256) << endl;
+        if constexpr (extra) cout << "Pawn Bonus: " << ((MgScore(pawns) * phase + EgScore(pawns) * (256 - phase) * scale / 128) / 256) << endl;
+        if constexpr (extra) cout << "Piece Bonus: " << ((MgScore(pieces) * phase + EgScore(pieces) * (256 - phase) * scale / 128) / 256) << endl;
+        if constexpr (extra) cout << "Passed Bonus: " << ((MgScore(ppawns) * phase + EgScore(ppawns) * (256 - phase) * scale / 128) / 256) << endl;
+        if constexpr (extra) cout << "Threat Malus: " << ((MgScore(threats) * phase + EgScore(threats) * (256 - phase) * scale / 128) / 256) << endl;
+        if constexpr (extra) cout << "Tempo Bonus: " << (status.wMove ? Tempo : -Tempo) << endl;
+        if constexpr (extra) cout << "Final Eval: " << eval + (status.wMove ? Tempo : -Tempo) << endl;
 
         // Return the evaluation, negated if we are black + tempo bonus
         return eval + (status.wMove ? Tempo : -Tempo);

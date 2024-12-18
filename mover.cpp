@@ -16,14 +16,15 @@ constexpr int dlvl = 0;
 
 class mover {
   public:
-	static inline ull nodes, cuts, skips;
+	static inline ull enodes, qnodes, cuts, skips;
 	static inline int maxdepth, halfmove, fullmove;
 	static inline long long alpha[256];
 	static inline long long beta[256];
 	static inline ull reps[1024];
 
 	static __attribute__((always_inline)) inline void Init(int md) {
-		mover::nodes = 0;
+		mover::enodes = 0;
+		mover::qnodes = 0;
 		mover::cuts = 0;
 		mover::skips = 0;
 		for(int i=0;i<64;i++){

@@ -557,7 +557,7 @@ namespace mList {
         _bishopmoves(C::template Bishopmove<status, F>, pinD12, brd, moves, cnt, queensD12, 0, Emptyfilter);
         _rookmoves(C::template Rookmove<status, F>, pinHV, brd, moves, cnt, queensHV, 0, Emptyfilter);
         _queenmoves(C::template Queenmove<status, F>, brd, moves, cnt, queens2, Emptyfilter);
-        _kingmoves(C::template Kingmove<status, F>, moves, cnt, king, kingatk, 0xffffffffffffffffull);
+        _kingmoves(C::template Kingmove<status, F>, moves, cnt, king, kingatk, ~brd.occupied);
 
         return cnt;
     }
@@ -617,13 +617,12 @@ namespace mList {
                 }
             }
 
-            if (depth >= tt.depth) {
-                tt.hash = z;
-                tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
-                tt.score = best;
-                tt.depth = depth;
-                tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
-            }
+            tt.hash = z;
+            tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
+            tt.score = best;
+            tt.depth = depth;
+            tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
+            
             return best;
         }
     }
@@ -631,7 +630,7 @@ namespace mList {
     template<class status status, class C>
     struct QuiesceMoves {
         __attribute__((noinline)) static long long e(board& brd, int depth){
-            C::nodes++;
+            C::qnodes++;
             ull checkmask = mGen::checks[depth];
             ull kingban = mGen::myking[depth - 1] = mGen::enking[depth];
             ull kingatk = refresh<status>(brd, kingban, checkmask, depth);
@@ -679,13 +678,12 @@ namespace mList {
                         }
                     }
 
-                    if (depth >= tt.depth) {
-                        tt.hash = z;
-                        tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
-                        tt.score = best;
-                        tt.depth = depth;
-                        tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
-                    }
+                    tt.hash = z;
+                    tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
+                    tt.score = best;
+                    tt.depth = depth;
+                    tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
+                    
                     return best;
                 }
             }
@@ -756,13 +754,12 @@ namespace mList {
                 }
             }
 
-            if (depth >= tt.depth) {
-                tt.hash = z;
-                tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
-                tt.score = best;
-                tt.depth = depth;
-                tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
-            }
+            tt.hash = z;
+            tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
+            tt.score = best;
+            tt.depth = depth;
+            tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
+            
             return best;
         }
     }
@@ -770,7 +767,7 @@ namespace mList {
     template<class status status, class C>
     struct EnumerateMoves {
         __attribute__((noinline)) static long long e(board& brd, int depth){
-            C::nodes++;
+            C::enodes++;
             ull checkmask = mGen::checks[depth];
             ull kingban = mGen::myking[depth - 1] = mGen::enking[depth];
             ull kingatk = refresh<status>(brd, kingban, checkmask, depth);
@@ -819,13 +816,12 @@ namespace mList {
                         }
                     }
 
-                    if (depth >= tt.depth) {
-                        tt.hash = z;
-                        tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
-                        tt.score = best;
-                        tt.depth = depth;
-                        tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
-                    }
+                    tt.hash = z;
+                    tt.m = C::alpha[depth] > oldAlpha ? bestmove : tt.m;
+                    tt.score = best;
+                    tt.depth = depth;
+                    tt.bound = best >= C::beta[depth] ? 0 : (C::alpha[depth] == oldAlpha ? 1 : 2);
+                    
                     return best;
                 }
             }

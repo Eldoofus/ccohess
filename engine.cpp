@@ -49,7 +49,7 @@ class ccohess : public senjo::ChessEngine {
         b = new board(fen);
         stat = new status(FenInfo(0, fen), FenInfo(1, fen), FenInfo(4, fen), FenInfo(5, fen), FenInfo(2, fen), FenInfo(3, fen));
         EP = FenEP(fen);
-        cout << "eval: " << evaluator::_eval(*stat, *b) << endl;
+        evaluator::_eval<true>(*stat, *b);
         mover::halfmove = -1;
         mover::fullmove = 0;
         b->print();
@@ -154,7 +154,7 @@ class ccohess : public senjo::ChessEngine {
         // cout << "has EP: " << stat->hasEP << endl;
         // cout << "EP: " << EP << endl;
         mover::fullmove++;
-        cout << evaluator::_eval(*stat, *b) << endl;
+        evaluator::_eval<true>(*stat, *b);
         delete oldb;
         delete olds;
         return true;
@@ -237,10 +237,11 @@ class ccohess : public senjo::ChessEngine {
             be = evals[i];
             bi = i;
         }
+        cout << "best move: " << moves.at(bi) << endl;
         cout << "best eval: " << be << endl;
-        cout << "total nodes: " << mover::nodes << endl;
-        cout << "beta cutoffs: " << mover::cuts << " (" << (double)mover::cuts / mover::nodes * 100 << "%)\n";
-        cout << "TT skips: " << mover::skips << " (" << (double)mover::skips / mover::nodes * 100 << "%)\n";
+        cout << "total nodes: " << mover::enodes + mover::qnodes << " (" << mover::enodes << " + " << mover::qnodes << ")" << endl;
+        cout << "beta cutoffs: " << mover::cuts << " (" << (double)mover::cuts / (mover::enodes + mover::qnodes) * 100 << "%)\n";
+        cout << "TT skips: " << mover::skips << " (" << (double)mover::skips / (mover::enodes + mover::qnodes) * 100 << "%)\n";
         return moves.at(bi);
     }
 
