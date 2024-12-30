@@ -518,78 +518,78 @@ if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000)>(
 return func<status::startpos()>(pos, brd, depth);}
 
 #define StatusToTemplate(func) \
-inline void _##func(status s, board& brd, int depth) { \
+inline long long _##func(const status& s, const board& brd, const int& depth, const long long& alpha, const long long& beta) { \
 const bool WH = s.wMove;\
 const bool EP = s.hasEP;\
 const bool BL = s.bCastleL;\
 const bool BR = s.bCastleR;\
 const bool WL = s.wCastleL;\
 const bool WR = s.wCastleR;\
-if ( WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b111111)>(brd, depth); \
-if ( WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b111110)>(brd, depth); \
-if ( WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b111101)>(brd, depth); \
-if ( WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b111100)>(brd, depth); \
-if ( WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b111011)>(brd, depth); \
-if ( WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b111010)>(brd, depth); \
-if ( WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b111001)>(brd, depth); \
-if ( WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b111000)>(brd, depth); \
-if ( WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b110111)>(brd, depth); \
-if ( WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b110110)>(brd, depth); \
-if ( WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b110101)>(brd, depth); \
-if ( WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b110100)>(brd, depth); \
-if ( WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b110011)>(brd, depth); \
-if ( WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b110010)>(brd, depth); \
-if ( WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b110001)>(brd, depth); \
-if ( WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b110000)>(brd, depth); \
-if ( WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b101111)>(brd, depth); \
-if ( WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b101110)>(brd, depth); \
-if ( WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b101101)>(brd, depth); \
-if ( WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b101100)>(brd, depth); \
-if ( WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b101011)>(brd, depth); \
-if ( WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b101010)>(brd, depth); \
-if ( WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b101001)>(brd, depth); \
-if ( WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b101000)>(brd, depth); \
-if ( WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b100111)>(brd, depth); \
-if ( WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b100110)>(brd, depth); \
-if ( WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b100101)>(brd, depth); \
-if ( WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b100100)>(brd, depth); \
-if ( WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b100011)>(brd, depth); \
-if ( WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b100010)>(brd, depth); \
-if ( WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b100001)>(brd, depth); \
-if ( WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b100000)>(brd, depth); \
-if (!WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b011111)>(brd, depth); \
-if (!WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b011110)>(brd, depth); \
-if (!WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b011101)>(brd, depth); \
-if (!WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b011100)>(brd, depth); \
-if (!WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b011011)>(brd, depth); \
-if (!WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b011010)>(brd, depth); \
-if (!WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b011001)>(brd, depth); \
-if (!WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b011000)>(brd, depth); \
-if (!WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b010111)>(brd, depth); \
-if (!WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b010110)>(brd, depth); \
-if (!WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b010101)>(brd, depth); \
-if (!WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b010100)>(brd, depth); \
-if (!WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b010011)>(brd, depth); \
-if (!WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b010010)>(brd, depth); \
-if (!WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b010001)>(brd, depth); \
-if (!WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b010000)>(brd, depth); \
-if (!WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b001111)>(brd, depth); \
-if (!WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b001110)>(brd, depth); \
-if (!WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b001101)>(brd, depth); \
-if (!WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b001100)>(brd, depth); \
-if (!WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b001011)>(brd, depth); \
-if (!WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b001010)>(brd, depth); \
-if (!WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b001001)>(brd, depth); \
-if (!WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b001000)>(brd, depth); \
-if (!WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b000111)>(brd, depth); \
-if (!WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b000110)>(brd, depth); \
-if (!WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b000101)>(brd, depth); \
-if (!WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b000100)>(brd, depth); \
-if (!WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b000011)>(brd, depth); \
-if (!WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b000010)>(brd, depth); \
-if (!WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b000001)>(brd, depth); \
-if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000)>(brd, depth); \
-return func<status::startpos()>(brd, depth);}
+if ( WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b111111)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b111110)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b111101)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b111100)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b111011)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b111010)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b111001)>(brd, depth, alpha, beta); \
+if ( WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b111000)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b110111)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b110110)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b110101)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b110100)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b110011)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b110010)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b110001)>(brd, depth, alpha, beta); \
+if ( WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b110000)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b101111)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b101110)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b101101)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b101100)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b101011)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b101010)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b101001)>(brd, depth, alpha, beta); \
+if ( WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b101000)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b100111)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b100110)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b100101)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b100100)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b100011)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b100010)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b100001)>(brd, depth, alpha, beta); \
+if ( WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b100000)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b011111)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b011110)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b011101)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL &&  WR && !BL && !BR)       return func<status(0b011100)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b011011)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL && !WR &&  BL && !BR)       return func<status(0b011010)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL && !WR && !BL &&  BR)       return func<status(0b011001)>(brd, depth, alpha, beta); \
+if (!WH &&  EP &&  WL && !WR && !BL && !BR)       return func<status(0b011000)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b010111)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL &&  WR &&  BL && !BR)       return func<status(0b010110)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL &&  WR && !BL &&  BR)       return func<status(0b010101)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL &&  WR && !BL && !BR)       return func<status(0b010100)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL && !WR &&  BL &&  BR)       return func<status(0b010011)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL && !WR &&  BL && !BR)       return func<status(0b010010)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL && !WR && !BL &&  BR)       return func<status(0b010001)>(brd, depth, alpha, beta); \
+if (!WH &&  EP && !WL && !WR && !BL && !BR)       return func<status(0b010000)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL &&  WR &&  BL &&  BR)       return func<status(0b001111)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL &&  WR &&  BL && !BR)       return func<status(0b001110)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL &&  WR && !BL &&  BR)       return func<status(0b001101)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL &&  WR && !BL && !BR)       return func<status(0b001100)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL && !WR &&  BL &&  BR)       return func<status(0b001011)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL && !WR &&  BL && !BR)       return func<status(0b001010)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL && !WR && !BL &&  BR)       return func<status(0b001001)>(brd, depth, alpha, beta); \
+if (!WH && !EP &&  WL && !WR && !BL && !BR)       return func<status(0b001000)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL &&  WR &&  BL &&  BR)       return func<status(0b000111)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL &&  WR &&  BL && !BR)       return func<status(0b000110)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL &&  WR && !BL &&  BR)       return func<status(0b000101)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL &&  WR && !BL && !BR)       return func<status(0b000100)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL && !WR &&  BL &&  BR)       return func<status(0b000011)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL && !WR &&  BL && !BR)       return func<status(0b000010)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL && !WR && !BL &&  BR)       return func<status(0b000001)>(brd, depth, alpha, beta); \
+if (!WH && !EP && !WL && !WR && !BL && !BR)       return func<status(0b000000)>(brd, depth, alpha, beta); \
+return func<status::startpos()>(brd, depth, alpha, beta);}
 
 #define EvalToTemplate(func) \
 template <bool e=false> \

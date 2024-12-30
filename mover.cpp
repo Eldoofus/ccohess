@@ -22,12 +22,15 @@ class mover {
 	static inline long long beta[256];
 	static inline ull reps[1024];
 
+	template<bool nodes = false>
 	static __attribute__((always_inline)) inline void Init(int md) {
-		mover::enodes = 0;
-		mover::qnodes = 0;
-		mover::cuts = 0;
-		mover::skips = 0;
-		for(int i=0;i<64;i++){
+		if constexpr (nodes){
+			mover::enodes = 0;
+			mover::qnodes = 0;
+			mover::cuts = 0;
+			mover::skips = 0;
+		}
+		for(int i=0;i<256;i++){
 			alpha[i] = -21474836470ll;
 			beta[i] = 21474836470ll;
 		}
@@ -45,7 +48,7 @@ class mover {
 		beta[depth-1] = -alpha[depth];
 		if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.kingMove(), mover>::e(next, depth-1);
-		if (depth == maxdepth) addEval(-eval);
+		// if (depth == maxdepth) addEval(-eval);
         mGen::enking[depth - 1] = mGen::myking[depth];
 		if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
 		if(to & brd.occupied) halfmove = h;
@@ -62,7 +65,7 @@ class mover {
 		beta[depth-1] = -alpha[depth];
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << (from | to) << " " << rookswitch << endl;
 		long long eval = F<status.kingMove(), mover>::e(next, depth-1);
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
         mGen::enking[depth - 1] = mGen::myking[depth];
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << (from | to) << " " << rookswitch << " " << -eval << endl;
 		fullmove--;
@@ -97,7 +100,7 @@ class mover {
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		mGen::checks[depth - 1] = 0xffffffffffffffffull;
 		halfmove = h;
 		fullmove--;
@@ -114,9 +117,9 @@ class mover {
 		alpha[depth-1] = -beta[depth];
 		beta[depth-1] = -alpha[depth];
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
-		long long eval = F<status.kingMove(), mover>::e(next, depth-1);
+		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		mGen::checks[depth - 1] = 0xffffffffffffffffull;
 		halfmove = h;
 		fullmove--;
@@ -135,7 +138,7 @@ class mover {
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		mGen::checks[depth - 1] = 0xffffffffffffffffull;
 		halfmove = h;
 		fullmove--;
@@ -156,7 +159,7 @@ class mover {
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.pawnPush(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		mGen::checks[depth - 1] = 0xffffffffffffffffull;
 		halfmove = h;
 		fullmove--;
@@ -174,7 +177,7 @@ class mover {
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << (int)p << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << (int)p << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		halfmove = h;
 		fullmove--;
 		return eval;
@@ -192,7 +195,7 @@ class mover {
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		mGen::checks[depth - 1] = 0xffffffffffffffffull;
 		if(to & brd.occupied) halfmove = h;
 		fullmove--;
@@ -209,7 +212,7 @@ class mover {
 		beta[depth-1] = -alpha[depth];
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
 		if(to & brd.occupied) halfmove = h;
 		fullmove--;
@@ -232,7 +235,7 @@ class mover {
 			else eval = F<status.silentMove(), mover>::e(next, depth-1);
 		} else eval = F<status.silentMove(), mover>::e(next, depth-1);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
 		if(to & brd.occupied) halfmove = h;
 		fullmove--;
 		return eval;
@@ -248,7 +251,7 @@ class mover {
 		beta[depth-1] = -alpha[depth];
         if constexpr (!post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << endl;
 		long long eval = F<status.silentMove(), mover>::e(next, depth-1);
-        if (depth == maxdepth) addEval(-eval);
+        // if (depth == maxdepth) addEval(-eval);
         if constexpr (post && debug) if(depth > dlvl) cout << string(depth, ' ') << __func__ << " " << from << " " << to << " " << -eval << endl;
 		if(to & brd.occupied) halfmove = h;
 		fullmove--;

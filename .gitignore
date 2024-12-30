@@ -47,3 +47,10 @@ map_output.cpp
 generator.cpp
 log.txt
 .vscode/*
+cutechess-cli/*
+fast*
+config.json
+app/*
+*.bin
+Book.bin
+*.epd

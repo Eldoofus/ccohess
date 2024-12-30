@@ -299,7 +299,7 @@ class evaluator {
 
         forBits (passers) {
             ull sq = square(passers);
-            ull forward = square(Pawn_Forward<white>(sq));
+            ull forward = square(Pawn_Forward<white>(1ull << sq));
             int rank = sq / 8;
             if constexpr (!white) rank = 7 - rank;
             int r = rank - 3;

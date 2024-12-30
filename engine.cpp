@@ -52,7 +52,7 @@ class ccohess : public senjo::ChessEngine {
         evaluator::_eval<true>(*stat, *b);
         mover::halfmove = -1;
         mover::fullmove = 0;
-        b->print();
+        //b->print();
         return true;
     }
 
@@ -174,13 +174,15 @@ class ccohess : public senjo::ChessEngine {
     uint64_t perft(const int depth){ return 0ull; }
 
     template<class status status>
-    void search(board& brd, int depth){
+    long long search(const board& brd, const int& depth, const long long& alpha, const long long& beta){
         // cout << "has EP: " << stat->hasEP << endl;
         // cout << "EP: " << EP << endl;
         mList::init<status>(brd, depth + 25);
         mList::initEP(EP);
         mover::Init(depth + 25);
-        mList::EnumerateMoves<status, mover>::e(brd, depth + 25);
+        mover::alpha[depth+26] = max(alpha, -21474836470ll);
+        mover::beta[depth+26] = min(beta, 21474836470ll);
+        return mList::EnumerateMoves<status, mover>::e(brd, depth + 25);
         //cout << "zobrist: " << format("{:#x}", Lookup::zobrist<status>(brd, EP)) << endl;
     }
     StatusToTemplate(search);
@@ -191,20 +193,53 @@ class ccohess : public senjo::ChessEngine {
     }
     BookToTemplate(book);
     
-    auto iterDeepen(ull time, int& depth){
+    auto iterDeepen(ull time, int& depth, long long& eval, int& bestmove){
         using namespace chrono;
+        long long delta, alpha, beta;
         ull e;
-        high_resolution_clock::time_point start = high_resolution_clock::now(), end;
-        for(;depth<30;depth++){
-            moves.clear();
-            evals.clear();
-            _search(*stat, *b, depth);
-            end = high_resolution_clock::now();
-            e = duration_cast<milliseconds>(end - start).count();
-            cout << "Reached depth " << depth << endl;
-            if (depth > 4 && e >= time / 20) return e;
+        searchtime = time;
+        start = high_resolution_clock::now();
+        eval = _search(*stat, *b, 1, -21474836470ll, 21474836470ll);
+        for(;depth<229;depth++){
+            try {
+                mover::Init<true>(depth + 25);
+                delta = 9 + eval * eval / 16384;
+                alpha = eval - alpha;
+                beta = eval + beta;
+                while(true){
+                    eval = _search(*stat, *b, depth, alpha, beta);
+                    if (eval <= alpha){
+                        alpha -= delta;
+                        beta = (alpha + 3 * beta) / 4;
+                    } else if (eval >= beta){
+                        beta += delta;
+                    } else break;
+                    delta += delta / 3;
+                }
+                ::end = high_resolution_clock::now();
+                e = duration_cast<milliseconds>(::end - ::start).count();
+                cout << "Reached depth " << depth << ": " << (eval >= 0 ? "+" : "") << eval << endl;
+                bestmove = pvtable[depth+25][depth+25];
+                if (depth > 4 && e >= time / 20) return e;
+            } catch (int x) {
+                depth--;
+                cout << "Aborting Search\n";
+                return e;
+            }
         }
+        for(int i=229;bestmove != 0 && i > -1;i--) bestmove = pvtable[i+25][i+25];
         return e;
+    }
+
+    string moveString(int m){
+        if(!m) return "";
+        string s = "";
+        s += ((m >> 6 & 0b111) + 'a');
+        s += ((m >> 9 & 0b111) + '1');
+        s += ((m & 0b111) + 'a');
+        s += ((m >> 3 & 0b111) + '1');
+        if(m >> 12) s += ((m >> 12) + '`');
+        return s;
     }
 
     string go(const senjo::GoParams& params, string* ponder = nullptr){
@@ -218,37 +253,46 @@ class ccohess : public senjo::ChessEngine {
                 return s;
             }
         }
-        int depth = 1;
-        auto elapsed = iterDeepen(stat->wMove ? params.wtime : params.btime, depth);
+        cout << mover::fullmove << " " << mover::halfmove << " " << mover::fullmove - mover::halfmove << endl;
+        int depth = 2;
+        long long eval;
+        int bestmove;
+        auto elapsed = iterDeepen((stat->wMove ? params.wtime : params.btime) + params.movetime * 10, depth, eval, bestmove);
         cout << "elapsed: " << elapsed << "ms (depth " << depth << ")\n";
-        if(moves.empty()) {
-            b->print();
-            cout << "No Moves!\n";
-            return "";
-        }
-        cout << "moves:";
-        for (string s : moves) cout << " " << s;
-        cout << "\nevals:";
-        for (long long d : evals) cout << " " << d;
-        cout << endl;
-        long long be = -21474836470ll;
-        int bi = 0;
-        for(int i=0;i<moves.size();i++) if(evals[i] > be){
-            be = evals[i];
-            bi = i;
-        }
-        cout << "best move: " << moves.at(bi) << endl;
-        cout << "best eval: " << be << endl;
+        // if(moves.empty()) {
+        //     b->print();
+        //     cout << "No Moves!\n";
+        //     return "";
+        // }
+        // cout << "moves:";
+        // for (string s : moves) cout << " " << s;
+        // cout << "\nevals:";
+        // for (long long d : evals) cout << " " << d;
+        // cout << endl;
+        // long long be = -21474836470ll;
+        // int bi = 0;
+        // for(int i=0;i<moves.size();i++) if(evals[i] > be){
+        //     be = evals[i];
+        //     bi = i;
+        // }
+        // cout << "best move: " << moves.at(bi) << endl;
+        //for(;depth>-1 && !pvtable[depth+25][depth+25];depth--) cout << "skipping depth " << depth << endl;
+        cout << "Search Eval: " << eval << endl;
+        cout << "PV line: ";
+        for(int i=depth+25;i>-1;i--){
+            if (pvtable[depth+25][i]) cout << moveString(pvtable[depth+25][i]) << " ";
+        } cout << endl;
         cout << "total nodes: " << mover::enodes + mover::qnodes << " (" << mover::enodes << " + " << mover::qnodes << ")" << endl;
         cout << "beta cutoffs: " << mover::cuts << " (" << (double)mover::cuts / (mover::enodes + mover::qnodes) * 100 << "%)\n";
         cout << "TT skips: " << mover::skips << " (" << (double)mover::skips / (mover::enodes + mover::qnodes) * 100 << "%)\n";
-        return moves.at(bi);
+        return moveString(bestmove);
     }
 
     senjo::SearchStats getSearchStats() const {
         return senjo::SearchStats();
     }
 };
+
 
 void addMove(ull from, ull to, char promo){
     //cout << from << ' ' << to << endl;
@@ -273,10 +317,11 @@ int main() {
         cout << "Beep Boop\n";
         ccohess engine;
         senjo::UCIAdapter adapter(engine);
-
+        adapter.doCommand("position startpos");
+        
         string line;
         line.reserve(16384);
-
+        
         ofstream o;
         o.open("log.txt", ios_base::app);
         o << "Beep Boop\n";
@@ -284,12 +329,9 @@ int main() {
         while (getline(cin, line)) {
             //cout << line << ", length: " << line.length();
             o << line << endl;
-            if (line == "isready"){
-                if (!adapter.doCommand(line)) break;
-                getline(cin, line);
-                if(line.length() == 28) if (!adapter.doCommand("position startpos")) break;
-            }
+            if (line == "position startpos") continue;
             if (!adapter.doCommand(line)) break;
+            if (line == "ucinewgame") adapter.doCommand("position startpos");
         }
         o.close();
         return 0;
